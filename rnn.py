@@ -1,16 +1,3 @@
-"""
-HeadURL:  $HeadURL$
-Last changed by:  $Author$
-Last changed on:  $Date$
-
-(c)  2016 BlackRock.  All rights reserved.
-
-Description:
-
-description
-"""
-__version__ = '$Revision$'
-
 from keras.models import Sequential
 from keras.engine.training import slice_X
 from keras.layers import Activation, TimeDistributed, Dense, RepeatVector, recurrent, Dropout
