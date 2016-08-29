@@ -1,16 +1,18 @@
 from keras.models import Sequential
 from keras.engine.training import slice_X
 from keras.layers import Activation, TimeDistributed, Dense, RepeatVector, recurrent, Dropout
+from keras.layers.embeddings import Embedding
 from keras.layers.recurrent import SimpleRNN, LSTM
 from keras.utils.np_utils import to_categorical
 import numpy as np
 from gensim.models.word2vec import Word2Vec
 from itertools import chain
+from keras.preprocessing import sequence
 
 
 class MySentences(object):
     def __init__(self, docstr):
-        print(docstr, "£££")
+        print(docstr, "><><><><><><")
         self.docstr = docstr
 
     def __iter__(self):
@@ -23,7 +25,7 @@ def doc2mat(txt):
     print("".join(x for x in txt))
     sentences = MySentences("".join(x for x in txt))
     print("DONE")
-    model = Word2Vec(iter=4, min_count=1)
+    model = Word2Vec( min_count=1)
     model.build_vocab(sentences)
     X = list()
     doc = list()
@@ -66,10 +68,11 @@ class FuzzySearch(Sequential):
         self.targets = targets
         self.hidden_l = hidden_l
         super(FuzzySearch, self).__init__()
-
+        # self.add(Embedding(20+1, word_dim,input_length =20, mask_zero=True))
         self.add(LSTM(self.HIDDEN,
                       input_shape=(None, word_dim),
                       return_sequences=True))
+
         # self.add(Dropout(0.2))
         while(hidden_l > 1):
             self.add(LSTM(self.HIDDEN, return_sequences=True))
@@ -113,10 +116,15 @@ class WordTable(object):
 
 
 def exp1():
-    txt = ["hello my name is francisco.\n I work in production operations at BLK. \n I am single and just graduated from uni"]
-    subs = "I work in production operations at BLK"
-    y = (makeYlabl(txt[0], subs)).reshape(1, 20, 1)
-    X = doc2mat(txt).reshape(1, 20, 100)
+    txt = ["hello my name is francisco.\n I work in production operations at BLK. \n I am 22 and just graduated from uni",
+             "hello my name is john.\n I work in operations in JP. \n I just graduated from uni"]
+    subs1 = "I work in production operations at BLK"
+    subs2 = "I work in operations in JP"
+    y = np.asarray(sequence.pad_sequences([(makeYlabl(txt[0], subs1)),
+       (makeYlabl(txt[1], subs2))], maxlen=20)).reshape(2,20,-1)
+    X = sequence.pad_sequences(doc2mat(txt), maxlen=20) #.reshape(2, 20, 100)
+
+    print(y.shape, "<><><><><><><><><>")
     print(X.shape)
     print(X.shape, len(y))
 
@@ -124,7 +132,7 @@ def exp1():
     wt = WordTable(["hello", "its", "me"], 3)
     print(wt.encode(["hello", "its"]))
     print(sv.layers)
-    sv.fit(X, y, nb_epoch=100)
+    sv.fit(X, y, nb_epoch=500)
     pred = np.argmax(sv.predict(X), axis=-1)
     print(pred, y, sv.predict(X))
 
